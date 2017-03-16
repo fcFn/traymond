@@ -1,0 +1,4 @@
+# Build results
+*.obj
+*.res
+*.exe
