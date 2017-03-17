@@ -157,7 +157,7 @@ void createTrayIcon(HWND mainWindow, HINSTANCE hInstance, NOTIFYICONDATA* icon) 
   icon->uVersion = NOTIFYICON_VERSION_4;
   icon->uID = reinterpret_cast<WORD>(mainWindow);
   icon->uCallbackMessage = WM_OURICON;
-  strcpy_s(icon->szTip, "Traymond is running");
+  strcpy_s(icon->szTip, "Traymond");
   Shell_NotifyIcon(NIM_ADD, icon);
   Shell_NotifyIcon(NIM_SETVERSION, icon);
 }
