@@ -17,7 +17,7 @@ No installation required, just run Traymond.exe.
 Controls
 --------
 
-+ __Win key + Z__: Minimize the currently focused window to tray.
++ __Win key + Shift + Z__: Minimize the currently focused window to tray.
 
 + __Double click on an icon__: Bring back the corresponding hidden window.
 

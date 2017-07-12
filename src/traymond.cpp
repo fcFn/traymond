@@ -6,7 +6,7 @@
 #define VK_Z_KEY 0x5A
 // These keys are used to send windows to tray
 #define TRAY_KEY VK_Z_KEY
-#define MOD_KEY MOD_WIN
+#define MOD_KEY MOD_WIN + MOD_SHIFT
 
 #define WM_ICON 0x1C0A
 #define WM_OURICON 0x1C0B
