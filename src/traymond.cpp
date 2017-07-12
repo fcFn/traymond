@@ -255,7 +255,7 @@ void startup(TRCONTEXT *context) {
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
   TRCONTEXT* context = reinterpret_cast<TRCONTEXT*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-
+  POINT pt;
   switch (uMsg)
   {
   case WM_ICON:
@@ -264,11 +264,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     }
     break;
   case WM_OURICON:
-    if (LOWORD(lParam) == WM_RBUTTONDOWN) {
-      SetForegroundWindow(hwnd); \
-        TrackPopupMenuEx(context->trayMenu, \
-        (GetSystemMetrics(SM_MENUDROPALIGNMENT) ? TPM_RIGHTALIGN : TPM_LEFTALIGN) | TPM_BOTTOMALIGN, \
-          GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam), hwnd, NULL);
+    if (LOWORD(lParam) == WM_RBUTTONUP) {
+      SetForegroundWindow(hwnd);
+      GetCursorPos(&pt);
+      TrackPopupMenuEx(context->trayMenu, \
+      (GetSystemMetrics(SM_MENUDROPALIGNMENT) ? TPM_RIGHTALIGN : TPM_LEFTALIGN) | TPM_BOTTOMALIGN, \
+        pt.x, pt.y, hwnd, NULL);
     }
     break;
   case WM_COMMAND:
@@ -289,7 +290,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
   default:
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
   }
-  return 1;
+  return 0;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
@@ -351,6 +352,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   ReleaseMutex(mutex);
   CloseHandle(mutex);
   CloseHandle(saveFile);
+  DestroyMenu(context.trayMenu);
   DestroyWindow(context.mainWindow);
   DeleteFile("traymond.dat"); // No save file means we have exited gracefully
   UnregisterHotKey(context.mainWindow, 0);
