@@ -42,3 +42,8 @@ Defines at the top of the file control the key and the mod key for sending windo
 #define TRAY_KEY VK_Z_KEY
 #define MOD_KEY MOD_WIN + MOD_SHIFT
 ```
+Contributing
+------------
+
+See [Contributing](https://github.com/fcFn/traymond/blob/master/CONTRIBUTING.md).
+
