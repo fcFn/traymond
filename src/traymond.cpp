@@ -128,7 +128,7 @@ void minimizeToTray(TRCONTEXT *context, long restoreWindow) {
   nid.hIcon = (HICON)icon;
   nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
   nid.uVersion = NOTIFYICON_VERSION_4;
-  nid.uID = reinterpret_cast<WORD>(currWin);
+  nid.uID = reinterpret_cast<UINT>(currWin);
   nid.uCallbackMessage = WM_ICON;
   GetWindowText(currWin, nid.szTip, 128);
   for (int i = 0; i < context->iconIndex; i++) {
@@ -155,7 +155,7 @@ void createTrayIcon(HWND mainWindow, HINSTANCE hInstance, NOTIFYICONDATA* icon) 
   icon->hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(101));
   icon->uFlags = NIF_ICON | NIF_TIP | NIF_SHOWTIP | NIF_MESSAGE;
   icon->uVersion = NOTIFYICON_VERSION_4;
-  icon->uID = reinterpret_cast<WORD>(mainWindow);
+  icon->uID = reinterpret_cast<UINT>(mainWindow);
   icon->uCallbackMessage = WM_OURICON;
   strcpy_s(icon->szTip, "Traymond");
   Shell_NotifyIcon(NIM_ADD, icon);
