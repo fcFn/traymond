@@ -30,9 +30,15 @@ Controls
 Building
 --------
 
+### Nmake
+
 `> nmake`
 
 Please read [this](https://msdn.microsoft.com/en-us/library/f35ctcxw.aspx) if there are any troubles.
+
+### Microsoft Visual Studio
+
+Import and build using the project files (thanks, [Tyler Szabo](https://github.com/tylerszabo)).
 
 Customizing
 -------------
@@ -46,4 +52,3 @@ Contributing
 ------------
 
 See [Contributing](https://github.com/fcFn/traymond/blob/master/CONTRIBUTING.md).
-
