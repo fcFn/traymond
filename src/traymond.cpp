@@ -65,10 +65,10 @@ void showWindow(TRCONTEXT *context, LPARAM lParam) {
       context->icons[i] = {};
       std::vector<HIDDEN_WINDOW> temp = std::vector<HIDDEN_WINDOW>(context->iconIndex);
       // Restructure array so there are no holes
-      for (int i = 0, x = 0; i < context->iconIndex; i++)
+      for (int j = 0, x = 0; j < context->iconIndex; j++)
       {
-        if (context->icons[i].window) {
-          temp[x] = context->icons[i];
+        if (context->icons[j].window) {
+          temp[x] = context->icons[j];
           x++;
         }
       }
@@ -114,8 +114,8 @@ void minimizeToTray(TRCONTEXT *context, long restoreWindow) {
     MessageBox(NULL, "Error! Too many hidden windows. Please unhide some.", "Traymond", MB_OK | MB_ICONERROR);
     return;
   }
-  ULONG_PTR icon;
-  if (!(icon = GetClassLongPtr(currWin, GCLP_HICONSM))) {
+  ULONG_PTR icon = GetClassLongPtr(currWin, GCLP_HICONSM);
+  if (!icon) {
     icon = SendMessage(currWin, WM_GETICON, 2, NULL);
     if (!icon) {
       return;
@@ -214,9 +214,9 @@ void startup(TRCONTEXT *context) {
   // display a reassuring message.
   if (GetLastError() == ERROR_ALREADY_EXISTS) {
     DWORD numbytes;
-    DWORD fileSize;
+    DWORD fileSize = GetFileSize(saveFile, NULL);
 
-    if (!(fileSize = GetFileSize(saveFile, NULL))) {
+    if (!fileSize) {
       return;
     };
 
@@ -293,7 +293,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
   return 0;
 }
 
+#pragma warning( push )
+#pragma warning( disable : 4100 )
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
+#pragma warning( pop )
 
   TRCONTEXT context = {};
 
