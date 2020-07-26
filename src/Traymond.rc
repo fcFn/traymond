@@ -36,17 +36,17 @@ BEGIN
 
             VALUE "FileDescription", "Traymond"
 
-            VALUE "FileVersion", "1.0.2"
+            VALUE "FileVersion", "1.0.3"
 
             VALUE "InternalName", "Traymond.exe"
 
-            VALUE "LegalCopyright", "Copyright (C) 2017 fcFn"
+            VALUE "LegalCopyright", "Copyright (C) 2020 fcFn"
 
             VALUE "OriginalFilename", "Traymond.exe"
 
             VALUE "ProductName", "Traymond"
 
-            VALUE "ProductVersion", "1.0.2"
+            VALUE "ProductVersion", "1.0.3"
 
             VALUE "Comment", "https://github.com/fcFn/traymond"
 
