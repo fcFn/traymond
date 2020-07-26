@@ -131,11 +131,6 @@ void minimizeToTray(TRCONTEXT *context, long restoreWindow) {
   nid.uID = LOWORD(reinterpret_cast<UINT>(currWin));
   nid.uCallbackMessage = WM_ICON;
   GetWindowText(currWin, nid.szTip, 128);
-  for (int i = 0; i < context->iconIndex; i++) {
-    if (context->icons[i].icon.uID == nid.uID) {
-      return;
-    }
-  }
   context->icons[context->iconIndex].icon = nid;
   context->icons[context->iconIndex].window = currWin;
   context->iconIndex++;
