@@ -128,7 +128,7 @@ void minimizeToTray(TRCONTEXT *context, long restoreWindow) {
   nid.hIcon = (HICON)icon;
   nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
   nid.uVersion = NOTIFYICON_VERSION_4;
-  nid.uID = reinterpret_cast<UINT>(currWin);
+  nid.uID = LOWORD(reinterpret_cast<UINT>(currWin));
   nid.uCallbackMessage = WM_ICON;
   GetWindowText(currWin, nid.szTip, 128);
   for (int i = 0; i < context->iconIndex; i++) {
