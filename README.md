@@ -1,4 +1,5 @@
-![Traymond](https://github.com/fcFn/fcFn.github.io/blob/master/images/logos/traymond_logo.png) Traymond
+![Traymond](https://github.com/dkxce/fcFn.github.io/blob/master/images/logos/traymond_logo.png) Traymond
+(mod by dkxce)
 =======
 
 A very simple app for minimizing any window to tray as an icon. Runs in the background.
@@ -9,7 +10,7 @@ Windows 7 or later required.
 
 **NB**: Does **_NOT_** work with apps from the Microsoft Store (see [#3](/../../issues/3)).
 
-A binary is available [here](https://github.com/fcFn/traymond/releases).
+A binary is available [here](https://github.com/dkxce/traymond/releases).
 
 Installing
 ------------
@@ -20,14 +21,11 @@ Controls
 --------
 
 + __Win key + Shift + Z__: Minimize the currently focused window to tray.
-
 + __Double click on an icon__: Bring back the corresponding hidden window.
-
 + __Tray icon menu__ accessible by right-clicking the Traymond tray icon:
-
   + __Restore all windows__: Restore all previously hidden windows.
-
   + __Exit__: Exit Traymond and restore all previously hidden windows.
+  + __Click on menu item__: Bring back the corresponding hidden window.
 
 Building
 --------
@@ -37,10 +35,6 @@ Building
 `> nmake`
 
 Please read [this](https://msdn.microsoft.com/en-us/library/f35ctcxw.aspx) if there are any troubles.
-
-### Microsoft Visual Studio
-
-Import and build using the project files (thanks, [Tyler Szabo](https://github.com/tylerszabo)).
 
 Customizing
 -------------
