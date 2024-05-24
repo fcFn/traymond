@@ -12,6 +12,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <thread>
 
 #define VK_Z_KEY 0x5A
 // These keys are used to send windows to tray
@@ -22,9 +23,13 @@
 #define WM_OURICON 0x1C0B
 #define EXIT_ID 0x99
 #define SHOW_ALL_ID 0x98
-#define SHOW_HELP 0x97
+#define SHOW_HOMEPAGE 0x97
+#define HIDE_FOREGROUND 0x96
 #define FIRST_MENU 0xA0
 #define MAXIMUM_WINDOWS 100
+
+
+using namespace std;
 
 
 bool initializated = false;
@@ -165,6 +170,7 @@ void showWindow(TRCONTEXT* context, LPARAM lParam)
             };
         }; 
     };
+    temp.clear();
     save(context);
 }
 
@@ -192,6 +198,8 @@ void addWindowMenuItem(TRCONTEXT* context, NOTIFYICONDATA nid)
     currentItem.hbmpItem = hBitmap;
     InsertMenuItem(context->trayMenu, 0, FALSE, &currentItem);
     trayedMenu.push_back(currentItem);
+
+    if (itmCounter >= 0xFF5F) itmCounter = 0; // reset counter
 }
 
 // Clear Menu
@@ -263,6 +271,16 @@ void minimizeToTray(TRCONTEXT* context, long restoreWindow) {
             return;
         }
     }
+    
+    // Check if already in Tray
+    if(context->iconIndex > 0)
+        for (int i = 0; i < context->iconIndex; i++)
+            if (context->icons[i].icon.uID == LOWORD(reinterpret_cast<UINT>(currWin)))
+            {
+                ShowWindow(currWin, SW_HIDE);
+                if (!restoreWindow) save(context);
+                return;
+            };
 
     NOTIFYICONDATA nid;
     nid.cbSize = sizeof(NOTIFYICONDATA);
@@ -279,11 +297,8 @@ void minimizeToTray(TRCONTEXT* context, long restoreWindow) {
     Shell_NotifyIcon(NIM_ADD, &nid);
     Shell_NotifyIcon(NIM_SETVERSION, &nid);
     ShowWindow(currWin, SW_HIDE);
-    if (!restoreWindow) {
-        save(context);
-    }
-
-    addWindowMenuItem(context, nid);  
+    if (!restoreWindow) save(context);
+    addWindowMenuItem(context, nid);
 }
 
 // Adds our own icon to tray
@@ -306,7 +321,8 @@ void createTrayMenu(HMENU* trayMenu) {
 
     MENUITEMINFO showAllMenuItem;
     MENUITEMINFO exitMenuItem;
-    MENUITEMINFO helpMenuItem;
+    MENUITEMINFO homePageItem;
+    MENUITEMINFO hideFgndWndItem;
 
     exitMenuItem.cbSize = sizeof(MENUITEMINFO);
     exitMenuItem.fMask = MIIM_STRING | MIIM_ID;
@@ -318,20 +334,27 @@ void createTrayMenu(HMENU* trayMenu) {
     showAllMenuItem.cbSize = sizeof(MENUITEMINFO);
     showAllMenuItem.fMask = MIIM_STRING | MIIM_ID;
     showAllMenuItem.fType = MFT_STRING;
-    showAllMenuItem.dwTypeData = "Restore all windows";
+    showAllMenuItem.dwTypeData = "Restore All Windows";
     showAllMenuItem.cch = 20;
     showAllMenuItem.wID = SHOW_ALL_ID;
 
-    helpMenuItem.cbSize = sizeof(MENUITEMINFO);
-    helpMenuItem.fMask = MIIM_STRING | MIIM_ID | MIIM_STATE;
-    helpMenuItem.fType = MFT_STRING;
-    helpMenuItem.fState = MFS_DISABLED | MFS_GRAYED;
-    helpMenuItem.dwTypeData = "Win+Shift+Z -> Tray (mod by dkxce)";
-    helpMenuItem.cch = 20;
-    helpMenuItem.wID = SHOW_HELP;
+    homePageItem.cbSize = sizeof(MENUITEMINFO);
+    homePageItem.fMask = MIIM_STRING | MIIM_ID;
+    homePageItem.fType = MFT_STRING;
+    homePageItem.dwTypeData = "Help (Win+Shift+Z -> Tray)";
+    homePageItem.cch = 27;
+    homePageItem.wID = SHOW_HOMEPAGE;
+
+    hideFgndWndItem.cbSize = sizeof(MENUITEMINFO);
+    hideFgndWndItem.fMask = MIIM_STRING | MIIM_ID;
+    hideFgndWndItem.fType = MFT_STRING;
+    hideFgndWndItem.dwTypeData = "Hide Foreground Window to Tray";
+    hideFgndWndItem.cch = 31;
+    hideFgndWndItem.wID = HIDE_FOREGROUND;
 
     InsertMenuItem(*trayMenu, 0, FALSE, &showAllMenuItem);
-    InsertMenuItem(*trayMenu, 0, FALSE, &helpMenuItem);
+    InsertMenuItem(*trayMenu, 0, FALSE, &hideFgndWndItem);
+    InsertMenuItem(*trayMenu, 0, FALSE, &homePageItem);  
     InsertMenuItem(*trayMenu, 0, FALSE, &exitMenuItem);
 }
 
@@ -407,6 +430,26 @@ void startup(TRCONTEXT* context)
     }
 }
 
+static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam) {
+    int length = GetWindowTextLength(hWnd);
+    char* buffer = new char[length + 1];
+    GetWindowText(hWnd, buffer, length + 1);
+    std::string windowTitle(buffer);
+    delete[] buffer;
+
+    if (IsWindowVisible(hWnd) && length != 0 && !(GetWindowLong(hWnd, GWL_EXSTYLE) & (WS_EX_TOOLWINDOW | WS_EX_TOPMOST)))
+    {
+        minimizeToTray((TRCONTEXT*)lparam, (long)hWnd);
+        return FALSE;
+    };
+    return TRUE;
+}
+
+void hideNextForegroundWindow(TRCONTEXT* context)
+{
+    EnumWindows(enumWindowCallback, (LPARAM)context);
+}
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
     TRCONTEXT* context = reinterpret_cast<TRCONTEXT*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
@@ -435,6 +478,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             {
                 switch LOWORD(wParam)
                 {
+                case HIDE_FOREGROUND:                    
+                    hideNextForegroundWindow(context);
+                    break;
+                case SHOW_HOMEPAGE:                    
+                    ShellExecuteA(0, 0, "explorer.exe", "http://github.com/dkxce/traymond", 0, SW_SHOWMAXIMIZED);                                     
+                    break;
                 case SHOW_ALL_ID:
                     showAllWindows(context);
                     break;

@@ -23,9 +23,11 @@ Controls
 + __Win key + Shift + Z__: Minimize the currently focused window to tray.
 + __Double click on an icon__: Bring back the corresponding hidden window.
 + __Tray icon menu__ accessible by right-clicking the Traymond tray icon:
-  + __Restore all windows__: Restore all previously hidden windows.
-  + __Exit__: Exit Traymond and restore all previously hidden windows.
   + __Click on menu item__: Bring back the corresponding hidden window.
+  + __Restore all windows__: Restore all previously hidden windows.
+  + __Hide Foreground Window to Tray__: Minimize the current foreground window to tray.
+  + __Help (Win+Shift+Z -> Tray)__: Open current page in browser.
+  + __Exit__: Exit Traymond and restore all previously hidden windows.
 
 Building
 --------
