@@ -26,6 +26,8 @@ Controls (v1.2.6)
   + __Click on menu item__: Bring back the corresponding hidden window.
   + __Restore all windows__: Restore all previously hidden windows.
   + __Hide Foreground Window to Tray__: Minimize the current foreground window to tray.
+  + __Autorun at Windows Startup__: Autorun Traymond at Windows Startup.
+  + __Disable Tray MultiIcons__: Disable Tray MultiIcons (Trayed Applications Icons).
   + __Help (Win+Shift+Z -> Tray)__: Open current page in browser.
   + __Exit__: Exit Traymond and restore all previously hidden windows.
 
