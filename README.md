@@ -14,7 +14,7 @@ A binary is available [here](https://github.com/dkxce/traymond/releases).
 Installing
 ------------
 
-No installation required, just run Traymond.exe.
+No installation required, just run Traymond2.exe.
 
 Controls (v2.0.0)
 --------
