@@ -4,9 +4,9 @@
 
 VS_VERSION_INFO VERSIONINFO
 
- FILEVERSION 1,2,6,0
+ FILEVERSION 2,0,0,0
 
- PRODUCTVERSION 1,2,6,0
+ PRODUCTVERSION 2,0,0,0
 
  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
 
@@ -34,9 +34,9 @@ BEGIN
 
             VALUE "CompanyName", "fcFn & dkxce"
 
-            VALUE "FileDescription", "Traymond"
+            VALUE "FileDescription", "Traymond II - Minimize any Window to Tray (by dkxce)"
 
-            VALUE "FileVersion", "1.2.6"
+            VALUE "FileVersion", "2.0.0"
 
             VALUE "InternalName", "Traymond.exe"
 
@@ -46,7 +46,7 @@ BEGIN
 
             VALUE "ProductName", "Traymond"
 
-            VALUE "ProductVersion", "1.2.6"
+            VALUE "ProductVersion", "2.0.0"
 
             VALUE "Comment", "https://github.com/dkxce/traymond"
 

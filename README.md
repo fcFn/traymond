@@ -1,8 +1,7 @@
-![Traymond](https://github.com/dkxce/fcFn.github.io/blob/master/images/logos/traymond_logo.png) Traymond
-(mod by dkxce)
+Traymond II
 =======
 
-A very simple app for minimizing any window to tray as an icon. Runs in the background.
+A simple app for minimizing any window to tray as an icon. Runs in the background.
 
 In case it terminates unexpectedly, restart the app and all the icons for minimized windows will come back.
 
@@ -17,7 +16,7 @@ Installing
 
 No installation required, just run Traymond.exe.
 
-Controls (v1.2.6)
+Controls (v2.0.0)
 --------
 
 + __Win key + Shift + Z__: Minimize the currently focused window to tray.
@@ -30,6 +29,18 @@ Controls (v1.2.6)
   + __Disable Tray MultiIcons__: Disable Tray MultiIcons (Trayed Applications Icons).
   + __Help (Win+Shift+Z -> Tray)__: Open current page in browser.
   + __Exit__: Exit Traymond and restore all previously hidden windows.
+
+Change Hoy Key:
+---------------
+To change hot key you must set command line argument `/key=...`, for exmaple:
+- traymond2`/key=Shift+Win+X`
+- traymond2`/key=Ctrl+Alt+R`
+- traymond2`/key=Alt+Shift+F2`
+- traymond2`/key=Shift+Alt+Back`
+  
+Supported combinations:     
+- `Alt`+, `Ctrl`+, `Shift`+, `Win`+
+- `TAB`,`PAUSE`,`SPACE`,`PRIOR`,`PAGEUP`,`NEXT`,`PAGEDOWN`,`END`,`HOME`,`LEFT`,`UP`,`RIGHT`,`DOWN`,`PRINT`,`INS`,`DEL`,`F10`,`F11`,`F12`,`F1`,`F2`,`F3`,`F4`,`F5`,`F6`,`F7`,`F8`,`F9`,`0`-`9`,`A`-`Z`
 
 Building
 --------
@@ -48,7 +59,4 @@ Defines at the top of the file control the key and the mod key for sending windo
 #define TRAY_KEY VK_Z_KEY
 #define MOD_KEY MOD_WIN + MOD_SHIFT
 ```
-Contributing
-------------
 
-See [Contributing](https://github.com/fcFn/traymond/blob/master/CONTRIBUTING.md).
