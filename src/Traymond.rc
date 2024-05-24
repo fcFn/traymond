@@ -4,9 +4,9 @@
 
 VS_VERSION_INFO VERSIONINFO
 
- FILEVERSION 1,1,5,0
+ FILEVERSION 1,2,6,0
 
- PRODUCTVERSION 1,1,5,0
+ PRODUCTVERSION 1,2,6,0
 
  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
 
@@ -36,7 +36,7 @@ BEGIN
 
             VALUE "FileDescription", "Traymond"
 
-            VALUE "FileVersion", "1.1.5"
+            VALUE "FileVersion", "1.2.6"
 
             VALUE "InternalName", "Traymond.exe"
 
@@ -46,7 +46,7 @@ BEGIN
 
             VALUE "ProductName", "Traymond"
 
-            VALUE "ProductVersion", "1.1.5"
+            VALUE "ProductVersion", "1.2.6"
 
             VALUE "Comment", "https://github.com/dkxce/traymond"
 

@@ -17,7 +17,7 @@ Installing
 
 No installation required, just run Traymond.exe.
 
-Controls
+Controls (v1.2.6)
 --------
 
 + __Win key + Shift + Z__: Minimize the currently focused window to tray.

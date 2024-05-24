@@ -25,13 +25,15 @@
 #define SHOW_ALL_ID 0x98
 #define SHOW_HOMEPAGE 0x97
 #define HIDE_FOREGROUND 0x96
+#define MNIT_AUTORUN 0x95
+#define MNIT_MLTICNS 0x954
 #define FIRST_MENU 0xA0
 #define MAXIMUM_WINDOWS 100
 
 
 using namespace std;
 
-
+bool multiIcons = true;
 bool initializated = false;
 WORD itmCounter = 0;
 std::vector<MENUITEMINFO> trayedMenu;
@@ -71,6 +73,121 @@ void save(const TRCONTEXT* context) {
             WriteFile(saveFile, handleString, strlen(handleString), &numbytes, NULL);
         }
     }
+}
+
+// Get Executable File Path
+std::string getExecutablePath() {
+    char rawPathName[MAX_PATH];
+    GetModuleFileNameA(NULL, rawPathName, MAX_PATH);
+    return std::string(rawPathName);
+}
+
+// Set Menu Item Checked or Not
+void setMenuItemChecked(TRCONTEXT* context, UINT wID, bool checked)
+{
+    int pos;                                          // use signed int so we can count down and detect passing 0
+    MENUITEMINFO mf;
+
+    ZeroMemory(&mf, sizeof(mf));                      // request just item ID
+    mf.cbSize = sizeof(mf);
+    mf.fMask = MIIM_ID | MIIM_STATE;
+    for (pos = GetMenuItemCount(context->trayMenu); --pos >= 0; )         // enumerate menu items
+        if (GetMenuItemInfo(context->trayMenu, (UINT)pos, TRUE, &mf))    // if we find the ID we are looking for return TRUE
+            if (mf.wID == wID)
+            {
+                //BOOL checked = GetMenuState(context->trayMenu, (UINT)pos, MF_BYPOSITION) & MF_CHECKED;
+                CheckMenuItem(context->trayMenu, (UINT)pos, MF_BYPOSITION | (checked ? MF_CHECKED : MF_UNCHECKED));
+                //DrawMenuBar((HWND)context->trayMenu);
+            };
+}
+
+// Set Application Autorun State
+bool toggleAutorun(TRCONTEXT* context, bool toggle)
+{
+    DWORD buffSize = 1024;
+    char buff[1024];
+    if (RegGetValue(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", "Traymond", RRF_RT_REG_SZ, nullptr, buff, &buffSize) == ERROR_SUCCESS)
+    {
+        if (toggle)
+        {
+            HKEY hkey = NULL;
+            LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+            RegDeleteValue(hkey, "Traymond");
+            RegCloseKey(hkey);
+            //MessageBox(0, "Traymond successfully removed from autorun", "Traymond", 0);
+            setMenuItemChecked(context, MNIT_AUTORUN, false);
+            return false;
+        };
+        return true;
+    }
+    else
+    {
+        if (toggle)
+        {
+            std::string currPath = getExecutablePath();
+            HKEY hkey = NULL;
+            LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+            LONG status = RegSetValueEx(hkey, "Traymond", 0, REG_SZ, (BYTE*)currPath.c_str(), (currPath.size() + 1) * sizeof(wchar_t));
+            RegCloseKey(hkey);
+            //MessageBox(0, "Traymond successfully added to autorun", "Traymond", 0);
+            setMenuItemChecked(context, MNIT_AUTORUN, true);
+            return true;
+        };
+        return false;
+    };
+}
+
+// Toggles Muiltiple Tray Icons
+bool toggleMultiIcons(TRCONTEXT* context, bool toggle)
+{
+
+    DWORD buffSize = 1024;
+    char buff[1024] = "false";
+    RegGetValue(HKEY_CURRENT_USER, "SOFTWARE\\Traymond", "DisableMultiIcons", RRF_RT_REG_SZ, nullptr, buff, &buffSize);
+    if (strcmp(buff, "true") == 0)
+    {
+        if (toggle)
+        {
+            HKEY hkey = NULL;
+            LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, "SOFTWARE\\Traymond", &hkey);
+            RegDeleteValue(hkey, "DisableMultiIcons");
+            RegCloseKey(hkey);
+            setMenuItemChecked(context, MNIT_MLTICNS, false);
+            //
+            if (context->iconIndex > 0)
+                for (int i = 0; i < context->iconIndex; i++)
+                {
+                    Shell_NotifyIcon(NIM_ADD, &context->icons[i].icon);
+                    Shell_NotifyIcon(NIM_SETVERSION, &context->icons[i].icon);
+                };
+            //
+            multiIcons = true;
+            return false;
+        };
+        multiIcons = false;
+        return true;
+    }
+    else
+    {
+        if (toggle)
+        {
+            std::string currPath = "true";
+            HKEY hkey = NULL;
+            LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, "SOFTWARE\\Traymond", &hkey);
+            LONG status = RegSetValueEx(hkey, "DisableMultiIcons", 0, REG_SZ, (BYTE*)currPath.c_str(), (currPath.size() + 1) * sizeof(wchar_t));
+            RegCloseKey(hkey);
+            setMenuItemChecked(context, MNIT_MLTICNS, true);
+            //
+            if(context->iconIndex > 0)
+                for (int i = 0; i < context->iconIndex; i++)
+                    Shell_NotifyIcon(NIM_DELETE, &context->icons[i].icon);
+            //
+            multiIcons = false;
+            return true;
+        };
+        multiIcons = true;
+        return false;
+    };
 }
 
 // Replace Colors in Bitmap
@@ -163,11 +280,12 @@ void showWindow(TRCONTEXT* context, LPARAM lParam)
         if (temp.size() > 0)
         {
             memcpy_s(context->icons, sizeof(context->icons), &temp.front(), sizeof(HIDDEN_WINDOW) * temp.size());
-            for (int i = 0; i < temp.size(); i++)
-            {
-                Shell_NotifyIcon(NIM_ADD, &temp[i].icon);
-                Shell_NotifyIcon(NIM_SETVERSION, &temp[i].icon);
-            };
+            if(multiIcons)
+                for (int i = 0; i < temp.size(); i++)
+                {
+                    Shell_NotifyIcon(NIM_ADD, &temp[i].icon);
+                    Shell_NotifyIcon(NIM_SETVERSION, &temp[i].icon);
+                };
         }; 
     };
     temp.clear();
@@ -294,8 +412,11 @@ void minimizeToTray(TRCONTEXT* context, long restoreWindow) {
     context->icons[context->iconIndex].icon = nid;
     context->icons[context->iconIndex].window = currWin;
     context->iconIndex++;
-    Shell_NotifyIcon(NIM_ADD, &nid);
-    Shell_NotifyIcon(NIM_SETVERSION, &nid);
+    if (multiIcons)
+    {
+        Shell_NotifyIcon(NIM_ADD, &nid);
+        Shell_NotifyIcon(NIM_SETVERSION, &nid);
+    };
     ShowWindow(currWin, SW_HIDE);
     if (!restoreWindow) save(context);
     addWindowMenuItem(context, nid);
@@ -316,14 +437,10 @@ void createTrayIcon(HWND mainWindow, HINSTANCE hInstance, NOTIFYICONDATA* icon) 
 }
 
 // Creates our tray icon menu
-void createTrayMenu(HMENU* trayMenu) {
-    *trayMenu = CreatePopupMenu();
+void createTrayMenu(TRCONTEXT* context) {
+    context->trayMenu = CreatePopupMenu();
 
-    MENUITEMINFO showAllMenuItem;
     MENUITEMINFO exitMenuItem;
-    MENUITEMINFO homePageItem;
-    MENUITEMINFO hideFgndWndItem;
-
     exitMenuItem.cbSize = sizeof(MENUITEMINFO);
     exitMenuItem.fMask = MIIM_STRING | MIIM_ID;
     exitMenuItem.fType = MFT_STRING;
@@ -331,6 +448,7 @@ void createTrayMenu(HMENU* trayMenu) {
     exitMenuItem.cch = 5;
     exitMenuItem.wID = EXIT_ID;
 
+    MENUITEMINFO showAllMenuItem;
     showAllMenuItem.cbSize = sizeof(MENUITEMINFO);
     showAllMenuItem.fMask = MIIM_STRING | MIIM_ID;
     showAllMenuItem.fType = MFT_STRING;
@@ -338,6 +456,7 @@ void createTrayMenu(HMENU* trayMenu) {
     showAllMenuItem.cch = 20;
     showAllMenuItem.wID = SHOW_ALL_ID;
 
+    MENUITEMINFO homePageItem;
     homePageItem.cbSize = sizeof(MENUITEMINFO);
     homePageItem.fMask = MIIM_STRING | MIIM_ID;
     homePageItem.fType = MFT_STRING;
@@ -345,6 +464,7 @@ void createTrayMenu(HMENU* trayMenu) {
     homePageItem.cch = 27;
     homePageItem.wID = SHOW_HOMEPAGE;
 
+    MENUITEMINFO hideFgndWndItem;
     hideFgndWndItem.cbSize = sizeof(MENUITEMINFO);
     hideFgndWndItem.fMask = MIIM_STRING | MIIM_ID;
     hideFgndWndItem.fType = MFT_STRING;
@@ -352,10 +472,31 @@ void createTrayMenu(HMENU* trayMenu) {
     hideFgndWndItem.cch = 31;
     hideFgndWndItem.wID = HIDE_FOREGROUND;
 
-    InsertMenuItem(*trayMenu, 0, FALSE, &showAllMenuItem);
-    InsertMenuItem(*trayMenu, 0, FALSE, &hideFgndWndItem);
-    InsertMenuItem(*trayMenu, 0, FALSE, &homePageItem);  
-    InsertMenuItem(*trayMenu, 0, FALSE, &exitMenuItem);
+    MENUITEMINFO autoRunMenu;
+    autoRunMenu.cbSize = sizeof(MENUITEMINFO);
+    autoRunMenu.fMask = MIIM_STRING | MIIM_ID | MIIM_STATE;
+    autoRunMenu.fType = MFT_STRING;
+    autoRunMenu.dwTypeData = "Autorun at Windows Startup";
+    autoRunMenu.fState = toggleAutorun(context, false) ? MFS_CHECKED : 0;
+    autoRunMenu.cch = 27;
+    autoRunMenu.wID = MNIT_AUTORUN;
+    
+    MENUITEMINFO nonMultiMenuItem;
+    nonMultiMenuItem.cbSize = sizeof(MENUITEMINFO);
+    nonMultiMenuItem.fMask = MIIM_STRING | MIIM_ID | MIIM_STATE;
+    nonMultiMenuItem.fType = MFT_STRING;
+    nonMultiMenuItem.dwTypeData = "Disable Tray MultiIcons";
+    nonMultiMenuItem.fState = toggleMultiIcons(context, false) ? MFS_CHECKED : 0;
+    nonMultiMenuItem.cch = 24;
+    nonMultiMenuItem.wID = MNIT_MLTICNS;
+   
+    InsertMenuItem(context->trayMenu, 0, FALSE, &nonMultiMenuItem);
+    InsertMenuItem(context->trayMenu, 0, FALSE, &autoRunMenu);
+    InsertMenuItem(context->trayMenu, 0, FALSE, &homePageItem);
+    InsertMenuItem(context->trayMenu, 0, FALSE, &exitMenuItem);
+    InsertMenu(context->trayMenu, 0, MF_SEPARATOR | MF_BYPOSITION, 0, NULL);
+    InsertMenuItem(context->trayMenu, 0, FALSE, &showAllMenuItem);
+    InsertMenuItem(context->trayMenu, 0, FALSE, &hideFgndWndItem);
 }
 
 // Shows all hidden windows;
@@ -445,6 +586,7 @@ static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam) {
     return TRUE;
 }
 
+// Hide Next Foreground Window
 void hideNextForegroundWindow(TRCONTEXT* context)
 {
     EnumWindows(enumWindowCallback, (LPARAM)context);
@@ -477,19 +619,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             if (HIWORD(wParam) == 0)
             {
                 switch LOWORD(wParam)
-                {
-                case HIDE_FOREGROUND:                    
-                    hideNextForegroundWindow(context);
-                    break;
-                case SHOW_HOMEPAGE:                    
-                    ShellExecuteA(0, 0, "explorer.exe", "http://github.com/dkxce/traymond", 0, SW_SHOWMAXIMIZED);                                     
-                    break;
-                case SHOW_ALL_ID:
-                    showAllWindows(context);
-                    break;
-                case EXIT_ID:
-                    exitApp();
-                    break;
+                {   
+                    case MNIT_MLTICNS:
+                        toggleMultiIcons(context, true);
+                        break;
+                    case MNIT_AUTORUN:
+                        toggleAutorun(context, true);
+                        break;
+                    case HIDE_FOREGROUND:                             
+                        hideNextForegroundWindow(context);                  
+                        break;
+                    case SHOW_HOMEPAGE:                    
+                        ShellExecuteA(0, 0, "explorer.exe", "http://github.com/dkxce/traymond", 0, SW_SHOWMAXIMIZED);                                     
+                        break;
+                    case SHOW_ALL_ID:
+                        showAllWindows(context);
+                        break;
+                    case EXIT_ID:
+                        exitApp();
+                        break;
                 };
                 if (LOWORD(wParam) >= 0xA0)
                     clickWindowMenuItem(context, LOWORD(wParam));
@@ -550,7 +698,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     createTrayIcon(context.mainWindow, hInstance, &icon);
-    createTrayMenu(&context.trayMenu);
+    createTrayMenu(&context);    
     startup(&context);
 
     while ((bRet = GetMessage(&msg, 0, 0, 0)) != 0)
