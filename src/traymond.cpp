@@ -29,6 +29,8 @@
 
 using namespace std;
 
+bool isRunning = true;
+HWND lastEplorerHandle = 0;
 WORD TRAY_KEY = VK_Z_KEY;
 WORD MOD_KEY = MOD_WIN + MOD_SHIFT;
 string MY_KEY = "Win+Shift+Z";
@@ -579,6 +581,7 @@ static BOOL CALLBACK enumWindowCallback(HWND hWnd, LPARAM lparam) {
     std::string windowTitle(buffer);
     delete[] buffer;
 
+    //if (IsWindowVisible(hWnd) && length != 0 && !(GetWindowLong(hWnd, GWL_EXSTYLE) & (WS_EX_TOOLWINDOW | WS_EX_TOPMOST)) && !(GetWindowLong(hWnd, GWL_STYLE) & WS_MINIMIZE))
     if (IsWindowVisible(hWnd) && length != 0 && !(GetWindowLong(hWnd, GWL_EXSTYLE) & (WS_EX_TOOLWINDOW | WS_EX_TOPMOST)))
     {
         minimizeToTray((TRCONTEXT*)lparam, (long)hWnd);
@@ -593,8 +596,37 @@ void hideNextForegroundWindow(TRCONTEXT* context)
     EnumWindows(enumWindowCallback, (LPARAM)context);
 }
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+void detectExplorerReloadThread(TRCONTEXT* context, NOTIFYICONDATA* icon)
+{
+    while (isRunning)
+    {
+        HWND hExp = FindWindow("Shell_TrayWnd", nullptr);
+        if (hExp != nullptr && hExp != lastEplorerHandle)
+        {            
+            if (lastEplorerHandle > 0)
+            {
+                Shell_NotifyIcon(NIM_ADD, icon);
+                Shell_NotifyIcon(NIM_SETVERSION, icon);
+                if (context->iconIndex > 0)
+                    for (int i = 0; i < context->iconIndex; i++)
+                    {
+                        Shell_NotifyIcon(NIM_ADD, &context->icons[i].icon);
+                        Shell_NotifyIcon(NIM_SETVERSION, &context->icons[i].icon);
+                    };
+            };
+            lastEplorerHandle = hExp;
+        };
+        std::this_thread::sleep_for(1500ms);
+    };
+}
 
+void detectExplorerReload(TRCONTEXT* context, NOTIFYICONDATA* icon)
+{
+    std::thread t1(detectExplorerReloadThread, context, icon);
+    t1.detach();
+}
+
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {    
     TRCONTEXT* context = reinterpret_cast<TRCONTEXT*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
     POINT pt;
     switch (uMsg)
@@ -649,7 +681,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
-    }
+    }    
+
     return 0;
 }
 
@@ -785,6 +818,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     createTrayIcon(context.mainWindow, hInstance, &icon);
     createTrayMenu(&context);    
     startup(&context);
+    detectExplorerReload(&context, &icon);
 
     while ((bRet = GetMessage(&msg, 0, 0, 0)) != 0)
     {
@@ -793,6 +827,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
     }
     // Clean up on exit;
+    isRunning = false;
     showAllWindows(&context);
     Shell_NotifyIcon(NIM_DELETE, &icon);
     ReleaseMutex(mutex);
