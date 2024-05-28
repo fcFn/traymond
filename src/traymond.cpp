@@ -12,7 +12,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include <thread>
+#include <thread>s
 
 #define VK_Z_KEY 0x5A
 #define WM_ICON 0x1C0A
@@ -52,6 +52,20 @@ typedef struct TRCONTEXT {
     HMENU trayMenu;
     int iconIndex; // How many windows are currently hidden
 } TRCONTEXT;
+
+// Tray Icon Button
+typedef struct TBBUTTON
+{
+    long iBitmap;
+    long idCommand;
+    byte fsState;
+    byte fsStyle;
+    WORD empty1;
+    WORD empty2;
+    WORD empty3;
+    long dwData;
+    long iString;
+} TBBUTTON;
 
 HANDLE saveFile;
 
@@ -350,6 +364,46 @@ void clickWindowMenuItem(TRCONTEXT* context, UINT wID)
     };
 }
 
+// check if application window is self-trayed (ex: procexp)
+bool checkIfSelfTrayed(HWND winHandle)
+{
+    const int TB_BUTTONCOUNT = WM_USER + 24;
+    const int TB_GETBUTTON = WM_USER + 23;
+    
+    bool result = false;
+    HWND trayHandle, trayProcess, trayMemory;
+    DWORD trayThread, trayIcons, bytesRead;
+    TBBUTTON trayButton = { 0 };
+    NOTIFYICONDATA trayIcon;
+    trayIcon.cbSize = sizeof(trayIcon);
+
+    if ((trayHandle = FindWindow("Shell_TrayWnd", 0))
+        && (trayHandle = FindWindowEx(trayHandle, 0, "TrayNotifyWnd", 0))
+        && (trayHandle = FindWindowEx(trayHandle, 0, "SysPager", 0))
+        && (trayHandle = FindWindowEx(trayHandle, 0, "ToolbarWindow32", 0))
+        && (GetWindowThreadProcessId(trayHandle, &trayThread) > 0)
+        && ((trayProcess = (HWND)OpenProcess(PROCESS_ALL_ACCESS, false, trayThread)) > 0)
+        && ((trayMemory = (HWND)VirtualAllocEx(trayProcess, 0, 4096, MEM_COMMIT, PAGE_READWRITE)) > 0)
+        && ((trayIcons = SendMessage(trayHandle, TB_BUTTONCOUNT, 0, 0)) > 0))
+        {
+            for (int i = 0; i < trayIcons; i++)
+                if ((SendMessage(trayHandle, TB_GETBUTTON, i, ((int)trayMemory)) > 0)
+                    && ReadProcessMemory(trayProcess, trayMemory, &trayButton, sizeof(trayButton), &bytesRead) 
+                    && (trayButton.dwData > 0) 
+                    && ReadProcessMemory(trayProcess, (LPVOID)(trayButton.dwData), &(trayIcon.hWnd), sizeof(trayIcon) - sizeof(trayIcon.cbSize), &bytesRead)
+                    && (trayIcon.hWnd == winHandle))
+                    {
+                        // char WindowName[255];
+                        // GetWindowTextA(trayIcon.hWnd, WindowName, 255);
+                        result = true;
+                        break;                
+                    };
+            VirtualFreeEx(trayProcess, trayMemory, 0, MEM_RELEASE);
+            CloseHandle(trayProcess);
+        };
+    return result;
+}
+
 // Minimizes the current window to tray.
 // Uses currently focused window unless supplied a handle as the argument.
 void minimizeToTray(TRCONTEXT* context, long restoreWindow) {
@@ -391,6 +445,10 @@ void minimizeToTray(TRCONTEXT* context, long restoreWindow) {
             return;
         }
     }
+
+    // Check if minimized
+    WINDOWPLACEMENT wp;
+    if(GetWindowPlacement(currWin, &wp) && (wp.showCmd == SW_SHOWMINIMIZED)) return;
     
     // Check if already in Tray
     if(context->iconIndex > 0)
@@ -401,6 +459,9 @@ void minimizeToTray(TRCONTEXT* context, long restoreWindow) {
                 if (!restoreWindow) save(context);
                 return;
             };
+
+    // Check if self-trayed (ex: procexp)
+    if (checkIfSelfTrayed(currWin)) return;
 
     NOTIFYICONDATA nid;
     nid.cbSize = sizeof(NOTIFYICONDATA);
@@ -462,17 +523,17 @@ void createTrayMenu(TRCONTEXT* context) {
     homePageItem.cbSize = sizeof(MENUITEMINFO);
     homePageItem.fMask = MIIM_STRING | MIIM_ID;
     homePageItem.fType = MFT_STRING;
-    string help_text = "Help (" + MY_KEY + " -> Tray)";
-    homePageItem.dwTypeData = (LPSTR)help_text.c_str();
-    homePageItem.cch = help_text.size();
+    homePageItem.dwTypeData = "Web site (github.com/dkxce/traymond)";
+    homePageItem.cch = 37;
     homePageItem.wID = SHOW_HOMEPAGE;
 
     MENUITEMINFO hideFgndWndItem;
     hideFgndWndItem.cbSize = sizeof(MENUITEMINFO);
     hideFgndWndItem.fMask = MIIM_STRING | MIIM_ID;
     hideFgndWndItem.fType = MFT_STRING;
-    hideFgndWndItem.dwTypeData = "Hide Foreground Window to Tray";
-    hideFgndWndItem.cch = 31;
+    string home_page = "Hide Foreground Window to Tray (" + MY_KEY + ")";
+    hideFgndWndItem.dwTypeData = (LPSTR)home_page.c_str();
+    hideFgndWndItem.cch = home_page.size();
     hideFgndWndItem.wID = HIDE_FOREGROUND;
 
     MENUITEMINFO autoRunMenu;
