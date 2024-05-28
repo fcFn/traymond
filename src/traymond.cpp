@@ -22,7 +22,7 @@
 #define SHOW_HOMEPAGE 0x97
 #define HIDE_FOREGROUND 0x96
 #define MNIT_AUTORUN 0x95
-#define MNIT_MLTICNS 0x954
+#define MNIT_MLTICNS 0x94
 #define FIRST_MENU 0xA0
 #define MAXIMUM_WINDOWS 100
 
@@ -607,7 +607,7 @@ void detectExplorerReloadThread(TRCONTEXT* context, NOTIFYICONDATA* icon)
             {
                 Shell_NotifyIcon(NIM_ADD, icon);
                 Shell_NotifyIcon(NIM_SETVERSION, icon);
-                if (context->iconIndex > 0)
+                if (multiIcons && context->iconIndex > 0)
                     for (int i = 0; i < context->iconIndex; i++)
                     {
                         Shell_NotifyIcon(NIM_ADD, &context->icons[i].icon);
