@@ -38,6 +38,7 @@ bool multiIcons = true;
 bool initializated = false;
 WORD itmCounter = 0;
 std::vector<MENUITEMINFO> trayedMenu;
+UINT uTaskbarCreatedMsg;
 
 // Stores hidden window record.
 typedef struct HIDDEN_WINDOW {
@@ -684,14 +685,16 @@ void detectExplorerReloadThread(TRCONTEXT* context, NOTIFYICONDATA* icon)
 void detectExplorerReload(TRCONTEXT* context, NOTIFYICONDATA* icon)
 {
     std::thread t1(detectExplorerReloadThread, context, icon);
-    t1.detach();
+    t1.detach(); 
+    ChangeWindowMessageFilterEx(context->mainWindow, uTaskbarCreatedMsg = RegisterWindowMessage("TaskbarCreated"), MSGFLT_ALLOW, NULL);
+    ChangeWindowMessageFilterEx(context->mainWindow, WM_COMMAND, MSGFLT_ALLOW, NULL);
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {    
     TRCONTEXT* context = reinterpret_cast<TRCONTEXT*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-    POINT pt;
+    POINT pt;       
     switch (uMsg)
-    {
+    {        
         case WM_ICON:
             if (LOWORD(lParam) == WM_LBUTTONDBLCLK)
             {
@@ -740,7 +743,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_HOTKEY: // We only have one hotkey, so no need to check the message
             minimizeToTray(context, NULL);
             break;
-        default:
+        default:     
+            if (uMsg == uTaskbarCreatedMsg) lastEplorerHandle = (HWND)-1;
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }    
 
