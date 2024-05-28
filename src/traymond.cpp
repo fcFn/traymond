@@ -408,7 +408,7 @@ bool checkIfSelfTrayed(HWND winHandle)
 // Uses currently focused window unless supplied a handle as the argument.
 void minimizeToTray(TRCONTEXT* context, long restoreWindow) {
     // Taskbar and desktop windows are restricted from hiding.
-    const char restrictWins[][14] = { {"WorkerW"}, {"Shell_TrayWnd"} };
+    const char restrictWins[][19] = { {"WorkerW"}, {"Shell_TrayWnd"}, {"Qt51513QWindowIcon"} };
 
     HWND currWin = 0;
     if (!restoreWindow) {

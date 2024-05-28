@@ -16,7 +16,7 @@ Installing
 
 No installation required, just run Traymond2.exe.
 
-Controls (v2.0.0)
+Controls (v2.0.3)
 --------
 
 + __Win key + Shift + Z__: Minimize the currently focused window to tray.
@@ -24,9 +24,9 @@ Controls (v2.0.0)
 + __Tray icon menu__ accessible by right-clicking the Traymond tray icon:
   + __Click on menu item__: Bring back the corresponding hidden window.
   + __Restore all windows__: Restore all previously hidden windows.
-  + __Hide Foreground Window to Tray__: Minimize the current foreground window to tray.
-  + __Autorun at Windows Startup__: Autorun Traymond at Windows Startup.
+  + __Hide Foreground Window to Tray (Win+Shift+Z)__: Minimize the current foreground window to tray.
   + __Disable Tray MultiIcons__: Disable Tray MultiIcons (Trayed Applications Icons).
+  + __Autorun at Windows Startup__: Autorun Traymond at Windows Startup.
   + __Web Site__: Open current page in browser.
   + __Exit__: Exit Traymond and restore all previously hidden windows.
 
