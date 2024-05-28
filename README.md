@@ -50,13 +50,3 @@ Building
 `> nmake`
 
 Please read [this](https://msdn.microsoft.com/en-us/library/f35ctcxw.aspx) if there are any troubles.
-
-Customizing
--------------
-
-Defines at the top of the file control the key and the mod key for sending windows to tray (use virtual key codes from [here](https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx) and mod keys from [here](https://msdn.microsoft.com/en-us/library/windows/desktop/ms646309(v=vs.85).aspx)):
-```
-#define TRAY_KEY VK_Z_KEY
-#define MOD_KEY MOD_WIN + MOD_SHIFT
-```
-
