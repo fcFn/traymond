@@ -27,7 +27,7 @@ Controls (v2.0.0)
   + __Hide Foreground Window to Tray__: Minimize the current foreground window to tray.
   + __Autorun at Windows Startup__: Autorun Traymond at Windows Startup.
   + __Disable Tray MultiIcons__: Disable Tray MultiIcons (Trayed Applications Icons).
-  + __Help (Win+Shift+Z -> Tray)__: Open current page in browser.
+  + __Web Site__: Open current page in browser.
   + __Exit__: Exit Traymond and restore all previously hidden windows.
 
 Change Hoy Key:
