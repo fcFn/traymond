@@ -12,7 +12,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include <thread>s
+#include <thread>
 
 #define VK_Z_KEY 0x5A
 #define WM_ICON 0x1C0A
