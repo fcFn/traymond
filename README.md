@@ -35,7 +35,7 @@ Controls (v2.0.3)
   + __Web Site__: Open current page in browser.
   + __Exit__: Exit Traymond and restore all previously hidden windows.
 
-Change Hoy Key:
+Change Hot Key:
 ---------------
 To change hot key you must set command line argument `/key=...`, for exmaple:
 - traymond2`/key=Shift+Win+X`
