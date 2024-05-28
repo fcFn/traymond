@@ -9,7 +9,12 @@ Windows 7 or later required.
 
 **NB**: Does **_NOT_** work with apps from the Microsoft Store (see [#3](/../../issues/3)).
 
-A binary is available [here](https://github.com/dkxce/traymond/releases).
+A binary is available [here](https://github.com/dkxce/traymond/releases).    
+
+Screenshots
+------------
+<img src="screenshot1.png"/>      
+<img src="screenshot2.png"/>      
 
 Installing
 ------------
